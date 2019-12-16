@@ -20,6 +20,7 @@ numpy = "^1.17.4"
 black = "^19.10b0"
 flake8 = "^3.7.9"
 mypy = "^0.750"
+isort = "^4.3.21"
 
 [build-system]
 requires = ["poetry>=0.12"]
