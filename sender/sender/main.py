@@ -16,6 +16,7 @@ from .encoder import generate_frames
 class Ui(BoxLayout):
     def __init__(self, **kwargs):
         super(Ui, self).__init__(**kwargs)
+        self.clock = None
 
     def update(self, dt):
         self.ids.frame_a.texture = self.frames[self.cursor]
@@ -28,21 +29,22 @@ class Ui(BoxLayout):
         self._popup.dismiss()
 
     def show_load(self):
+        if self.clock:
+            self.clock.cancel()
+
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
     def load(self, path, filename):
-        with open(os.path.join(path, filename[0])) as stream:
-            data = stream.read()
-            self.frames = generate_frames([data for _ in range(3)])
+        with open(os.path.join(path, filename[0]), "rb") as stream:
+            self.frames = generate_frames(stream.read())
             self.cursor = 0
             self.ids.start.disabled = False
-
         self.dismiss_popup()
 
     def start(self):
-        Clock.schedule_interval(self.update, 1.0 / 30.0)
+        self.clock = Clock.schedule_interval(self.update, 1.0 / 30.0)
 
 
 class LoadDialog(FloatLayout):
