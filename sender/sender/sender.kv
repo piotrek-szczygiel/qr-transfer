@@ -1,13 +1,70 @@
 #:kivy 1.0
+#:import Path pathlib.Path
 
 <Ui>:
-    GridLayout:
-        cols: 2
-        Image:
-            id: frame_a
-        Image:
-            id: frame_b
-        Image:
-            id: frame_c
-        Image:
-            id: frame_d
+    BoxLayout:
+        orientation: "vertical"
+        AnchorLayout:
+            size_hint_y: None
+            height: 20
+
+        GridLayout:
+            rows: 2
+            cols: 2
+            AnchorLayout:
+                Image:
+                    size_hint: .9, .9
+                    allow_stretch: True
+                    id: frame_a
+
+            AnchorLayout:
+                Image:
+                    size_hint: .9, .9
+                    allow_stretch: True
+                    id: frame_b
+
+            AnchorLayout:
+                Image:
+                    size_hint: .9, .9
+                    allow_stretch: True
+                    id: frame_c
+
+            AnchorLayout:
+                Image:
+                    size_hint: .9, .9
+                    allow_stretch: True
+                    id: frame_d
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint_y: None
+            height: 50
+            Button:
+                text: "Load"
+                on_release: root.show_load()
+
+            Button:
+                text: "Start"
+                disabled: True
+                id: start
+                on_release: root.start()
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            path: str(Path.home())
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
