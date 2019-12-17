@@ -42,8 +42,8 @@ def generate_frames(data):
     for i in range(0, size, chunk_size):
         chunks.append(data[i : i + chunk_size])
 
-    if len(chunks) % 3 != 0:
-        for _ in range(3 - len(chunks) % 3):
+    if len(chunks) % 12 != 0:
+        for _ in range(12 - len(chunks) % 12):
             chunks.append("")
 
     triplets = []

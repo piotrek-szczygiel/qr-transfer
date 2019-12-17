@@ -17,13 +17,28 @@ class Ui(BoxLayout):
     def __init__(self, **kwargs):
         super(Ui, self).__init__(**kwargs)
         self.clock = None
+        self.even = True
+
+        self.images = [
+            image
+            for image in (
+                self.ids.image_a,
+                self.ids.image_b,
+                self.ids.image_c,
+                self.ids.image_d,
+            )
+        ]
 
     def update(self, dt):
-        self.ids.frame_a.texture = self.frames[self.cursor]
-        self.ids.frame_b.texture = self.frames[self.cursor]
-        self.ids.frame_c.texture = self.frames[self.cursor]
-        self.ids.frame_d.texture = self.frames[self.cursor]
-        self.cursor = (self.cursor + 1) % len(self.frames)
+        i = (0, 1, 2, 3) if self.even else (2, 3, 0, 1)
+        self.images[i[0]].texture = self.frames[self.cursor]
+        self.images[i[1]].texture = self.frames[self.cursor + 1]
+        self.images[i[2]].texture = None
+        self.images[i[3]].texture = None
+
+        self.even = not self.even
+        self.cursor += 2
+        self.cursor %= len(self.frames)
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -37,6 +52,10 @@ class Ui(BoxLayout):
         self._popup.open()
 
     def load(self, path, filename):
+        for i in self.images:
+            i.texture = None
+        self.even = True
+
         with open(os.path.join(path, filename[0]), "rb") as stream:
             self.frames = generate_frames(stream.read())
             self.cursor = 0
@@ -44,7 +63,7 @@ class Ui(BoxLayout):
         self.dismiss_popup()
 
     def start(self):
-        self.clock = Clock.schedule_interval(self.update, 1.0 / 30.0)
+        self.clock = Clock.schedule_interval(self.update, 1.0 / 8.0)
 
 
 class LoadDialog(FloatLayout):
