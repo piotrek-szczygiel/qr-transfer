@@ -7,7 +7,6 @@ import numpy as np
 import segno
 from tqdm import trange
 
-# Maximum data size a QR Code, version 40, with minimal error correction can hold
 QR_VERSION = 20
 MAX_CHUNK_SIZE = 858
 

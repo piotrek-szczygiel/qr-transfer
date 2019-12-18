@@ -1,4 +1,8 @@
-import pygame as pg
+import os
+
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
+
+import pygame as pg  # noqa: E402 isort:skip
 
 
 class App:
