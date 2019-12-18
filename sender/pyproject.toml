@@ -8,13 +8,12 @@ authors = ["Piotr Szczygieł <szczygiel.p@gmail.com>"]
 sender = "sender:run"
 
 [tool.poetry.dependencies]
-python = "^3.7"
-kivy = "1.11.1"
-"kivy_deps.glew" = "0.1.12"
-"kivy_deps.sdl2" = "0.1.22"
-pillow = "^6.2.1"
+python = "^3.8"
 segno = "^0.3.2"
 numpy = "^1.17.4"
+pygame = "2.0.0.dev6"
+opencv-python-headless = "^4.1.2"
+tqdm = "^4.40.2"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"

@@ -2,36 +2,30 @@ import io
 import math
 from threading import Thread
 
+import cv2
 import numpy as np
 import segno
-from kivy.core.image import Image as CoreImage
-from PIL import Image
+from tqdm import trange
 
 # Maximum data size a QR Code, version 40, with minimal error correction can hold
 QR_VERSION = 20
 MAX_CHUNK_SIZE = 858
 
 
-def encode_frame(a, b, c):
+def encode_frame(a, b, c, scale=2):
     data = [
         segno.make(x, error="L", version=QR_VERSION, mode="byte", boost_error=False)
         for x in (a, b, c)
     ]
-    size = len(data[0].matrix)
 
-    rgb = np.zeros((size, size, 3), "uint8")
+    size = len(data[0].matrix)
+    rgb = np.zeros((size, size, 3), np.uint8)
+
     for i in range(3):
         rgb[..., i] = np.array(data[i].matrix) * 255
 
-    img = Image.fromarray(rgb)
-
-    scale = math.ceil(400 / size)
-    img = img.resize((size * scale, size * scale))
-
-    buffer = io.BytesIO()
-    img.save(buffer, format="png")
-    buffer.seek(0)
-    return CoreImage(io.BytesIO(buffer.read()), ext="png").texture
+    scaled = cv2.resize(rgb, (size * 4, size * 4), interpolation=cv2.INTER_NEAREST)
+    return scaled
 
 
 def generate_frames(data):
@@ -51,11 +45,8 @@ def generate_frames(data):
         triplets.append((chunks[i], chunks[i + 1], chunks[i + 2]))
 
     print(f"File size: {size}B")
-    print(f"Triplets: {len(triplets)}")
-
     frames = []
-    for i, t in enumerate(triplets):
-        print(f"Encoding triplet {i}/{len(triplets)}...")
-        frames.append(encode_frame(*t))
+    for i in trange(len(triplets), desc="encoding", unit="codes"):
+        frames.append(encode_frame(*triplets[i]))
 
     return frames

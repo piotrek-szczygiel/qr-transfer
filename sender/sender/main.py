@@ -1,89 +1,64 @@
-import os
-import uuid
-
-from kivy.app import App
-from kivy.clock import Clock
-from kivy.factory import Factory
-from kivy.properties import ObjectProperty
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.image import Image
-from kivy.uix.popup import Popup
+import pygame as pg
 
 from .encoder import generate_frames
 
 
-class Ui(BoxLayout):
-    def __init__(self, **kwargs):
-        super(Ui, self).__init__(**kwargs)
-        self.clock = None
-        self.even = True
-
-        self.images = [
-            image
-            for image in (
-                self.ids.image_a,
-                self.ids.image_b,
-                self.ids.image_c,
-                self.ids.image_d,
-            )
-        ]
-
-    def update(self, dt):
-        i = (0, 1, 2, 3) if self.even else (2, 3, 0, 1)
-        self.images[i[0]].texture = self.frames[self.cursor]
-        self.images[i[1]].texture = self.frames[self.cursor + 1]
-        self.images[i[2]].texture = None
-        self.images[i[3]].texture = None
-
-        self.even = not self.even
-        self.cursor += 2
-        self.cursor %= len(self.frames)
-
-    def dismiss_popup(self):
-        self._popup.dismiss()
-
-    def show_load(self):
-        if self.clock:
-            self.clock.cancel()
-
-        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-        self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
-        self._popup.open()
-
-    def load(self, path, filename):
-        for i in self.images:
-            i.texture = None
-        self.even = True
-
-        with open(os.path.join(path, filename[0]), "rb") as stream:
-            self.frames = generate_frames(stream.read())
-            self.cursor = 0
-            self.ids.start.disabled = False
-        self.dismiss_popup()
-
-    def start(self):
-        self.clock = Clock.schedule_interval(self.update, 1.0 / 8.0)
-
-
-class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
-
-
-class SenderApp(App):
-    from kivy.config import Config
-
-    Config.set("graphics", "width", 730)
-    Config.set("graphics", "height", 800)
-    Config.set("modules", "monitor", "")
-
-    def build(self):
-        from kivy.core.window import Window
-
-        Window.clearcolor = (1, 1, 1, 1)
-        return Ui()
-
-
 def run():
-    SenderApp().run()
+    with open("poetry.lock", "rb") as file:
+        data = file.read()
+
+    frames = [pg.surfarray.make_surface(frame) for frame in generate_frames(data)]
+    frame_width = frames[0].get_width()
+
+    margin = 10
+    top_margin = 20
+    window_size = (
+        2 * frame_width + 3 * margin,
+        2 * frame_width + 3 * margin + top_margin,
+    )
+
+    frame_positions = [
+        (margin, margin + top_margin),
+        (frame_width + 2 * margin, frame_width + 2 * margin + top_margin),
+        (margin, frame_width + 2 * margin + top_margin),
+        (frame_width + 2 * margin, margin + top_margin),
+    ]
+
+    pg.init()
+    display = pg.display.set_mode(window_size)
+    pg.display.set_caption("QR Sender")
+
+    font = pg.font.Font(pg.font.get_default_font(), 12)
+    clock = pg.time.Clock()
+
+    next_frame_event = pg.USEREVENT
+    pg.time.set_timer(next_frame_event, 500)
+
+    cursor = 0
+    even = True
+
+    running = True
+    while running:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                running = False
+            elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
+                running = False
+            elif event.type == next_frame_event:
+                cursor += 2
+                cursor %= len(frames)
+                even = not even
+
+        display.fill(pg.Color("white"))
+
+        fps = f"FPS: {str(int(clock.get_fps()))}"
+        display.blit(font.render(fps, True, pg.Color("black")), (5, 5))
+
+        for i in range(2):
+            pos = i if even else i + 2
+            display.blit(frames[cursor + i], frame_positions[pos])
+
+        pg.display.flip()
+        clock.tick(60)
+
+    pg.quit()
