@@ -20,10 +20,29 @@ def run():
         "-f",
         "--freq",
         action="store",
-        dest="freq",
+        dest="frequency",
         type=int,
         default=4,
         help="frequency",
+    )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store",
+        dest="version",
+        type=int,
+        choices=range(1, 21),
+        default=15,
+        help="qr code version",
+    )
+    parser.add_argument(
+        "-s",
+        "--save",
+        action="store",
+        dest="qr_size",
+        type=int,
+        default=400,
+        help="maximum single qr size in pixels",
     )
     args = parser.parse_args()
 
@@ -33,7 +52,7 @@ def run():
         try:
             with open(args.filename, "rb") as file:
                 data = file.read()
-                frames = generate_frames(data)
+                frames = generate_frames(data, args.version, args.qr_size)
         except FileNotFoundError:
             print(f"unable to open file {args.filename}")
             sys.exit(1)
@@ -49,7 +68,7 @@ def run():
             print(f"cache file {cache_filename} does not exist")
             sys.exit(1)
 
-    App(frames, freq=args.freq).run()
+    App(frames, frequency=args.frequency).run()
 
 
 if __name__ == "__main__":

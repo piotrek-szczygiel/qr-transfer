@@ -8,11 +8,11 @@ import pygame as pg  # noqa: E402 isort:skip
 class App:
     MARGIN = 10
 
-    def __init__(self, frames, freq=8):
+    def __init__(self, frames, frequency=8):
         self.frames = [pg.surfarray.make_surface(frame) for frame in frames]
         self.count = len(self.frames)
 
-        self.freq = freq
+        self.frequency = frequency
 
         frame_width = self.frames[0].get_width()
 
@@ -46,7 +46,7 @@ class App:
         self.font = pg.font.Font(pg.font.get_default_font(), 12)
         self.clock = pg.time.Clock()
 
-        pg.time.set_timer(self.frame_event, 1000 // self.freq)
+        pg.time.set_timer(self.frame_event, 1000 // self.frequency)
 
         self.running = True
         while self.running:
