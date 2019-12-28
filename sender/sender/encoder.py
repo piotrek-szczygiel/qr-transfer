@@ -1,4 +1,5 @@
 import io
+import sys
 import math
 from threading import Thread
 
@@ -64,10 +65,15 @@ def generate_frames(data, version, qr_size):
     #   - total frame count
     #
     # number is encoded as 4 byte big endian unsigned integer
-    len_bytes = len(chunks).to_bytes(4, byteorder="big")
-    for i in range(len(chunks)):
-        i_bytes = i.to_bytes(4, byteorder="big")
-        chunks[i] = i_bytes + len_bytes + chunks[i]
+    try:
+        len_bytes = len(chunks).to_bytes(4, byteorder="big")
+    except OverflowError:
+        print("file size is too big")
+        sys.exit(1)
+    else:
+        for i in range(len(chunks)):
+            i_bytes = i.to_bytes(4, byteorder="big")
+            chunks[i] = i_bytes + len_bytes + chunks[i]
 
     print(f"File size: {size}B")
     frames = []
