@@ -21,7 +21,7 @@ def encode_frame(a, b, c, scale=2):
     rgb = np.zeros((size, size, 3), np.uint8)
 
     for i in range(3):
-        rgb[..., i] = np.array(data[i].matrix) * 255
+        rgb[..., i] = (1 - np.array(data[i].matrix)) * 255
 
     scaled = cv2.resize(rgb, (size * 4, size * 4), interpolation=cv2.INTER_NEAREST)
     return scaled
