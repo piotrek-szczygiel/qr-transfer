@@ -1,5 +1,6 @@
 import os
 
+# Hide pygame advertisement
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 
 import pygame as pg  # noqa: E402 isort:skip
@@ -30,7 +31,9 @@ class App:
 
         self.running = False
 
-        self.cursor = 0
+        self.cursor_a = 0
+        self.cursor_b = 1
+
         self.even = True
 
         self.display = None
@@ -46,7 +49,8 @@ class App:
         self.font = pg.font.Font(pg.font.get_default_font(), 12)
         self.clock = pg.time.Clock()
 
-        pg.time.set_timer(self.frame_event, 1000 // self.frequency)
+        if self.count > 2:
+            pg.time.set_timer(self.frame_event, 1000 // self.frequency)
 
         self.running = True
         while self.running:
@@ -56,8 +60,8 @@ class App:
                 elif event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                     self.running = False
                 elif event.type == self.frame_event:
-                    self.cursor += 2
-                    self.cursor %= self.count
+                    self.cursor_a = (self.cursor_a + 2) % self.count
+                    self.cursor_b = (self.cursor_b + 2) % self.count
                     self.even = not self.even
 
             self.display.fill((255, 255, 255))
@@ -65,12 +69,20 @@ class App:
             fps = self.font.render(f"FPS: {int(self.clock.get_fps())}", True, (0, 0, 0))
             self.display.blit(fps, (self.window_size[0] - 60, 5))
 
-            qr = self.font.render(f"QR: {self.cursor}/{self.count}", True, (0, 0, 0))
-            self.display.blit(qr, (5, 5))
+            info = self.font.render(
+                f"QR: {self.cursor_a + 1}/{self.count}", True, (0, 0, 0),
+            )
+            self.display.blit(info, (5, 5))
 
-            for i in range(2):
-                pos = i if self.even else i + 2
-                self.display.blit(self.frames[self.cursor + i], self.positions[pos])
+            if self.cursor_a < self.count:
+                self.display.blit(
+                    self.frames[self.cursor_a], self.positions[0 if self.even else 2]
+                )
+
+            if self.cursor_b < self.count:
+                self.display.blit(
+                    self.frames[self.cursor_b], self.positions[1 if self.even else 3]
+                )
 
             pg.display.flip()
             self.clock.tick(60)

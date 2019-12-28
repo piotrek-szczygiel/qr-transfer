@@ -31,7 +31,7 @@ def run():
         action="store",
         dest="version",
         type=int,
-        choices=range(1, 21),
+        choices=range(5, 16),
         default=15,
         help="qr code version",
     )
