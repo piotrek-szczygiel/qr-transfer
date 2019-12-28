@@ -53,11 +53,21 @@ def encode_frame(a, b, c, version=15, qr_size=400):
 
 def generate_frames(data, version, qr_size):
     size = len(data)
-    chunk_size = QR_SIZE[version]
+    chunk_size = QR_SIZE[version] - 8  # 8 bytes for header
     chunks = []
 
     for i in range(0, size, chunk_size):
         chunks.append(data[i : i + chunk_size])
+
+    # Append header before every chunk
+    #   - current frame number
+    #   - total frame count
+    #
+    # number is encoded as 4 byte big endian unsigned integer
+    len_bytes = len(chunks).to_bytes(4, byteorder="big")
+    for i in range(len(chunks)):
+        i_bytes = i.to_bytes(4, byteorder="big")
+        chunks[i] = i_bytes + len_bytes + chunks[i]
 
     print(f"File size: {size}B")
     frames = []
